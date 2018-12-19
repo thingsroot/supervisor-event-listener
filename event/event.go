@@ -16,8 +16,10 @@ type Message struct {
 }
 
 func (msg *Message) String() string {
-	return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nEXITED FROM state: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.FromState)
-
+	if msg.Header.EventName == "PROCESS_STATE_EXITED" {
+		return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nEXITED FROM state: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.FromState)
+	}
+	return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nData: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.Data)
 }
 
 // Header Supervisord触发事件时会先发送Header，根据Header中len字段去读取Payload
@@ -37,6 +39,10 @@ type Payload struct {
 	ProcessName string // 进程名称
 	GroupName   string // 进程组名称
 	FromState   string
+	Channel		string
+	Type		string
+	Data		string
+	When		int
 	Expected    int
 	Pid         int
 }
@@ -78,8 +84,16 @@ func ParsePayload(payload string) (*Payload, error) {
 	p.ProcessName = fields["processname"]
 	p.GroupName = fields["groupname"]
 	p.FromState = fields["from_state"]
+	p.Channel = fields["channel"] // LOG Event
+	p.Type = fields["type"]
+	p.When, _ = strconv.Atoi(fields["when"])
 	p.Expected, _ = strconv.Atoi(fields["expected"])
 	p.Pid, _ = strconv.Atoi(fields["pid"])
+
+	slice := strings.Split(payload, "\n")
+	if len(slice) > 1 {
+		p.Data =  slice[1]
+	}
 
 	return p, nil
 }

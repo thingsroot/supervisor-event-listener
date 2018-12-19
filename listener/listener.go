@@ -13,6 +13,9 @@ import (
 var (
 	ErrPayloadLength = errors.New("Header中len长度与实际读取长度不一致")
 )
+var (
+	handled_events = map[string]int{ "PROCESS_STATE_EXITED": 1, "PROCESS_LOG_STDERR": 1, "PROCESS_LOG_STDOUT": 1}
+)
 
 func Start() {
 	defer func() {
@@ -20,6 +23,7 @@ func Start() {
 			log.Print("panic", err)
 		}
 	}()
+	log.Print("Event Listener Start!!!")
 	listen()
 }
 
@@ -38,10 +42,16 @@ func listen() {
 			failure(err)
 			continue
 		}
+		log.Print("Got Event!", header)
+		if _,ok := handled_events[header.EventName]; ok {
+			notify.Push(header, payload)
+		}
+		/*
 		// 只处理进程异常退出事件
 		if header.EventName == "PROCESS_STATE_EXITED" {
 			notify.Push(header, payload)
 		}
+		*/
 		success()
 	}
 }
@@ -53,6 +63,7 @@ func readHeader(reader *bufio.Reader) (*event.Header, error) {
 	if err != nil {
 		return nil, err
 	}
+	//log.Print("HEADER:", data)
 	// 解析Header
 	header, err := event.ParseHeader(data)
 	if err != nil {
@@ -73,6 +84,7 @@ func readPayload(reader *bufio.Reader, payloadLen int) (*event.Payload, error) {
 	if payloadLen != length {
 		return nil, ErrPayloadLength
 	}
+	//log.Print("PAYLOAD:", string(buf))
 	// 解析payload
 	payload, err := event.ParsePayload(string(buf))
 	if err != nil {
