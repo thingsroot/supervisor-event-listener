@@ -14,7 +14,7 @@ var (
 	ErrPayloadLength = errors.New("Header中len长度与实际读取长度不一致")
 )
 var (
-	handled_events = map[string]int{ "PROCESS_STATE_EXITED": 1, "PROCESS_LOG_STDERR": 1, "PROCESS_LOG_STDOUT": 1}
+	handled_events = map[string]int{ "PROCESS_STATE_EXITED": 1, "PROCESS_STATE_FATAL": 1, "PROCESS_LOG_STDERR": 1, "PROCESS_LOG_STDOUT": 1}
 )
 
 func Start() {

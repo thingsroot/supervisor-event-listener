@@ -40,6 +40,8 @@ func start() {
 			notifyHandler = &Slack{}
 		case "webhook":
 			notifyHandler = &WebHook{}
+		case "wechat_crop":
+			notifyHandler = &WechatCrop{}
 		}
 		if notifyHandler == nil {
 			continue

@@ -19,6 +19,9 @@ func (msg *Message) String() string {
 	if msg.Header.EventName == "PROCESS_STATE_EXITED" {
 		return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nEXITED FROM state: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.FromState)
 	}
+	if msg.Header.EventName == "PROCESS_STATE_FATAL" {
+		return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nFATAL FROM state: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.FromState)
+	}
 	return fmt.Sprintf("Host: %s\nProcess: %s\nPID: %d\nData: %s", msg.Payload.Ip, msg.Payload.ProcessName, msg.Payload.Pid, msg.Payload.Data)
 }
 

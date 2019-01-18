@@ -15,6 +15,13 @@ type Config struct {
 	MailServer MailServer
 	MailUser   MailUser
 	Slack      Slack
+	WechatCrop WechatCrop
+}
+
+type WechatCrop struct {
+	CropID string
+	AgentID int
+	Secret string
 }
 
 type WebHook struct {
@@ -54,7 +61,7 @@ func ParseConfig() *Config {
 	section := file.Section("default")
 	notifyType := section.Key("notify_type").String()
 	notifyType = strings.TrimSpace(notifyType)
-	if !utils.InStringSlice([]string{"mail", "slack", "webhook"}, notifyType) {
+	if !utils.InStringSlice([]string{"mail", "slack", "webhook", "wechat_crop"}, notifyType) {
 		Exit("不支持的通知类型-" + notifyType)
 	}
 
@@ -68,6 +75,8 @@ func ParseConfig() *Config {
 		config.Slack = parseSlack(section)
 	case "webhook":
 		config.WebHook = parseWebHook(section)
+	case "wechat_crop":
+		config.WechatCrop = parseWechatCrop(section)
 	}
 
 	return config
@@ -132,6 +141,26 @@ func parseWebHook(section *ini.Section) WebHook {
 	webHook.Url = url
 
 	return webHook
+}
+
+func parseWechatCrop(section *ini.Section) WechatCrop {
+	crop_id := section.Key("wechat_crop.crop_id").String()
+	crop_id = strings.TrimSpace(crop_id)
+	agent_id, agent_idErr := section.Key("wechat_crop.agent_id").Int()
+
+	secret := section.Key("wechat_crop.secret").String()
+	secret = strings.TrimSpace(secret)
+
+	if crop_id == "" || secret == "" || agent_idErr != nil {
+		Exit("微信企业号配置错误")
+	}
+
+	wechatCrop := WechatCrop{}
+	wechatCrop.CropID = crop_id
+	wechatCrop.AgentID = agent_id
+	wechatCrop.Secret = secret
+
+	return wechatCrop
 }
 
 func Exit(msg string) {
